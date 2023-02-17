@@ -14,6 +14,11 @@ type DailyRecord struct {
 	TransAmount   float64 `json:"transAmount"`
 }
 
+type DeleteRecord struct {
+	Code string `json:"code"`
+	Date string `json:"date"`
+}
+
 type NewRecord struct {
 	Code          string  `json:"code"`
 	Name          string  `json:"name"`
