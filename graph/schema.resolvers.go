@@ -6,6 +6,7 @@ package graph
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/kwangsing3/stock-bar/dbhandler"
 	"github.com/kwangsing3/stock-bar/graph/model"
@@ -13,8 +14,15 @@ import (
 
 // CreateStock is the resolver for the createStock field.
 func (r *mutationResolver) CreateStock(ctx context.Context, input model.NewStock) (*model.Stock, error) {
-	res, err := dbhandler.DB.InsertStock(input)
+	res, err := dbhandler.DB.UpsertStock(input)
 	return res, err
+}
+
+// DeleteStock is the resolver for the deleteStock field.
+func (r *mutationResolver) DeleteStock(ctx context.Context, code string) (*bool, error) {
+	res, err := dbhandler.DB.DeleteStock(code)
+	bol := res.DeletedCount > 0
+	return &bol, err
 }
 
 // InsertRecord is the resolver for the insertRecord field.
@@ -35,6 +43,11 @@ func (r *mutationResolver) InsertRecord(ctx context.Context, input model.NewReco
 		return nil, err
 	}
 	return &data, err
+}
+
+// DeleteRecord is the resolver for the deleteRecord field.
+func (r *mutationResolver) DeleteRecord(ctx context.Context, input model.DeleteRecord) (*bool, error) {
+	panic(fmt.Errorf("not implemented: DeleteRecord - deleteRecord"))
 }
 
 // Stock is the resolver for the stock field.

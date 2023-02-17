@@ -2,40 +2,23 @@
 #
 # https:#gqlgen.com/getting-started/
 
-
+# 查詢
 type Query {
   stock(code: String!): Stock
 }
 type Mutation {
   createStock(input: NewStock!): Stock
+  deleteStock(code: String!): Boolean
   insertRecord(input: NewRecord!): DailyRecord
+  deleteRecord(input: DeleteRecord!): Boolean
 }
 
 
-type Stock {
-  code: String!
-  name: String!
-  historicalRecord: [DailyRecord]!
-}
-
-type DailyRecord {
-  date: String! #日期
-  tradingVolume: Float! #成交股數
-  tradingPrice: Float! #成交金額
-  openPrice: Float! #開盤價
-  highestPrice: Float! #最高價
-  lowestPrice: Float! #最低價
-  closePrice: Float! #收盤價
-  priceDiff: Float! #漲跌價差
-  transAmount: Float! #成交筆
-}
-
-
+# 新增
 input NewStock {
   code: String!
   name: String!
 }
-
 input NewRecord {
   code: String! #證券代號
   name: String! #證券名稱
@@ -49,3 +32,31 @@ input NewRecord {
   priceDiff: Float! #漲跌價差
   transAmount: Float! #成交筆
 }
+
+# 刪除
+input DeleteRecord {
+  code: String! #證券代號
+  date: String! #日期
+}
+# 返回結構
+type Stock {
+  code: String!
+  name: String!
+  historicalRecord: [DailyRecord]!
+}
+type DailyRecord {
+  date: String! #日期
+  tradingVolume: Float! #成交股數
+  tradingPrice: Float! #成交金額
+  openPrice: Float! #開盤價
+  highestPrice: Float! #最高價
+  lowestPrice: Float! #最低價
+  closePrice: Float! #收盤價
+  priceDiff: Float! #漲跌價差
+  transAmount: Float! #成交筆
+}
+
+
+
+
+

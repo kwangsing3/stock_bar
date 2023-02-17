@@ -13,7 +13,7 @@ import (
 var DATABASE = "DEBUG"
 var COLLECTION = "STOCK"
 
-var DB, _ = NewDBHandler("/*MongoDB Connect URL*/")
+var DB, _ = NewDBHandler("/**MongoDB Connect URL**/")
 
 type DBHandler struct {
 	client *mongo.Client
@@ -39,19 +39,21 @@ func DisConnect() {
 	DB.client.Disconnect(context.TODO())
 }
 
-func (r *DBHandler) InsertStock(stock model.NewStock) (*model.Stock, error) {
+// Stock
+func (r *DBHandler) UpsertStock(stock model.NewStock) (*model.Stock, error) {
 	res := model.Stock{
-		Name: stock.Name,
-		Code: stock.Code,
+		Name:             stock.Name,
+		Code:             stock.Code,
+		HistoricalRecord: []*model.DailyRecord{},
 	}
-
-	_, err := r.coll.InsertOne(context.TODO(), stock)
+	_, err := r.coll.UpdateOne(context.TODO(),
+		bson.D{{Key: "code", Value: stock.Code}},
+		bson.D{{Key: "$set", Value: res}}, options.Update().SetUpsert(true))
 	if err != nil {
 		return nil, err
 	}
 	return &res, nil
 }
-
 func (r *DBHandler) GetStockByCode(code string) (*model.Stock, error) {
 	var res model.Stock
 	err := r.coll.FindOne(context.TODO(), bson.M{"code": code}).Decode(&res)
@@ -60,12 +62,20 @@ func (r *DBHandler) GetStockByCode(code string) (*model.Stock, error) {
 	}
 	return &res, nil
 }
+func (r *DBHandler) DeleteStock(code string) (*mongo.DeleteResult, error) {
+	res, err := r.coll.DeleteMany(context.TODO(), bson.M{"code": code})
+	if err != nil {
+		return res, err
+	}
+	return res, nil
+}
 
+// Record
 func (r *DBHandler) InsertRecord(code string, record model.DailyRecord) (bool, error) {
 	filter := bson.M{"code": code}
 	update := bson.M{
 		"$push": bson.M{
-			"HistoricalRecord": record,
+			"historicalrecord": record,
 		},
 	}
 	_, err := r.coll.UpdateOne(context.TODO(), filter, update)
@@ -79,7 +89,7 @@ func (r *DBHandler) UpdateRecord(code string, record model.NewRecord) error {
 	filter := bson.M{"code": code}
 	update := bson.M{
 		"$set": bson.M{
-			"HistoricalRecord": record,
+			"historicalrecord": record,
 		},
 	}
 	_, err := r.coll.UpdateOne(context.TODO(), filter, update)
