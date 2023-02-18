@@ -4,7 +4,7 @@
 
 # 查詢
 type Query {
-  stock(code: String!): Stock
+  stock(code: String!): [Stock!]
 }
 type Mutation {
   createStock(input: NewStock!): Stock

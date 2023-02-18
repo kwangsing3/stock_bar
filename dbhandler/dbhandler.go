@@ -54,13 +54,26 @@ func (r *DBHandler) UpsertStock(stock model.NewStock) (*model.Stock, error) {
 	}
 	return &res, nil
 }
-func (r *DBHandler) GetStockByCode(code string) (*model.Stock, error) {
-	var res model.Stock
-	err := r.coll.FindOne(context.TODO(), bson.M{"code": code}).Decode(&res)
+func (r *DBHandler) GetStockByCode(code string) ([]*model.Stock, error) {
+	var res []*model.Stock
+	//如果是空就返回全部項目
+	var filter interface{} = bson.M{"code": code}
+	if code == "" {
+		filter = bson.D{{}}
+	}
+	cur, err := r.coll.Find(context.TODO(), filter)
 	if err != nil {
 		return nil, err
 	}
-	return &res, nil
+	for cur.Next(context.TODO()) {
+		var elem *model.Stock
+		err := cur.Decode(&elem)
+		if err != nil {
+			continue
+		}
+		res = append(res, elem)
+	}
+	return res, nil
 }
 func (r *DBHandler) DeleteStock(code string) (*mongo.DeleteResult, error) {
 	res, err := r.coll.DeleteMany(context.TODO(), bson.M{"code": code})
