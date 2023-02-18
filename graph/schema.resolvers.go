@@ -51,7 +51,7 @@ func (r *mutationResolver) DeleteRecord(ctx context.Context, input model.DeleteR
 }
 
 // Stock is the resolver for the stock field.
-func (r *queryResolver) Stock(ctx context.Context, code string) (*model.Stock, error) {
+func (r *queryResolver) Stock(ctx context.Context, code string) ([]*model.Stock, error) {
 	res, err := dbhandler.DB.GetStockByCode(code)
 	return res, err
 }
