@@ -12,8 +12,7 @@ import (
 
 var DATABASE = "DEBUG"
 var COLLECTION = "STOCK"
-
-var DB, _ = NewDBHandler("/**MongoDB Connect URL**/")
+var DB, _ = NewDBHandler("mongodb+srv://genesis:xRncyo2dVDcvPiJQ@cluster0.jm9ahx2.mongodb.net/test")
 
 type DBHandler struct {
 	client *mongo.Client
@@ -110,4 +109,22 @@ func (r *DBHandler) UpdateRecord(code string, record model.NewRecord) error {
 		return err
 	}
 	return nil
+}
+
+func (r *DBHandler) GetRecordByCode(code string, name string, date string) ([]*model.DailyRecord, error) {
+	var res []*model.DailyRecord
+	filter := bson.M{"code": code}
+	var dd *model.Stock
+	err := r.coll.FindOne(context.TODO(), filter).Decode(&dd)
+
+	lens := len(dd.HistoricalRecord)
+	for i := 0; i < lens; i++ {
+		if dd.HistoricalRecord[i].Date == date {
+			res = append(res, dd.HistoricalRecord[i])
+		}
+	}
+	if err != nil {
+		return nil, err
+	}
+	return res, nil
 }
