@@ -3,15 +3,15 @@
 package model
 
 type DailyRecord struct {
-	Date          string  `json:"date"`
-	TradingVolume float64 `json:"tradingVolume"`
-	TradingPrice  float64 `json:"tradingPrice"`
-	OpenPrice     float64 `json:"openPrice"`
-	HighestPrice  float64 `json:"highestPrice"`
-	LowestPrice   float64 `json:"lowestPrice"`
-	ClosePrice    float64 `json:"closePrice"`
-	PriceDiff     float64 `json:"priceDiff"`
-	TransAmount   float64 `json:"transAmount"`
+	Date          string `json:"date"`
+	TradingVolume string `json:"tradingVolume"`
+	TradingPrice  string `json:"tradingPrice"`
+	OpenPrice     string `json:"openPrice"`
+	HighestPrice  string `json:"highestPrice"`
+	LowestPrice   string `json:"lowestPrice"`
+	ClosePrice    string `json:"closePrice"`
+	PriceDiff     string `json:"priceDiff"`
+	TransAmount   string `json:"transAmount"`
 }
 
 type DeleteRecord struct {
@@ -20,17 +20,17 @@ type DeleteRecord struct {
 }
 
 type NewRecord struct {
-	Code          string  `json:"code"`
-	Name          string  `json:"name"`
-	Date          string  `json:"date"`
-	TradingVolume float64 `json:"tradingVolume"`
-	TradingPrice  float64 `json:"tradingPrice"`
-	OpenPrice     float64 `json:"openPrice"`
-	HighestPrice  float64 `json:"highestPrice"`
-	LowestPrice   float64 `json:"lowestPrice"`
-	ClosePrice    float64 `json:"closePrice"`
-	PriceDiff     float64 `json:"priceDiff"`
-	TransAmount   float64 `json:"transAmount"`
+	Code          string `json:"code"`
+	Name          string `json:"name"`
+	Date          string `json:"date"`
+	TradingVolume string `json:"tradingVolume"`
+	TradingPrice  string `json:"tradingPrice"`
+	OpenPrice     string `json:"openPrice"`
+	HighestPrice  string `json:"highestPrice"`
+	LowestPrice   string `json:"lowestPrice"`
+	ClosePrice    string `json:"closePrice"`
+	PriceDiff     string `json:"priceDiff"`
+	TransAmount   string `json:"transAmount"`
 }
 
 type NewStock struct {

@@ -64,7 +64,8 @@ type ComplexityRoot struct {
 	}
 
 	Query struct {
-		Stock func(childComplexity int, code string) int
+		Record func(childComplexity int, code string, name string, date string) int
+		Stock  func(childComplexity int, code string) int
 	}
 
 	Stock struct {
@@ -82,6 +83,7 @@ type MutationResolver interface {
 }
 type QueryResolver interface {
 	Stock(ctx context.Context, code string) ([]*model.Stock, error)
+	Record(ctx context.Context, code string, name string, date string) ([]*model.DailyRecord, error)
 }
 
 type executableSchema struct {
@@ -209,6 +211,18 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Mutation.InsertRecord(childComplexity, args["input"].(model.NewRecord)), true
+
+	case "Query.record":
+		if e.complexity.Query.Record == nil {
+			break
+		}
+
+		args, err := ec.field_Query_record_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Query.Record(childComplexity, args["code"].(string), args["name"].(string), args["date"].(string)), true
 
 	case "Query.stock":
 		if e.complexity.Query.Stock == nil {
@@ -408,6 +422,39 @@ func (ec *executionContext) field_Query___type_args(ctx context.Context, rawArgs
 	return args, nil
 }
 
+func (ec *executionContext) field_Query_record_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 string
+	if tmp, ok := rawArgs["code"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("code"))
+		arg0, err = ec.unmarshalNString2string(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["code"] = arg0
+	var arg1 string
+	if tmp, ok := rawArgs["name"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("name"))
+		arg1, err = ec.unmarshalNString2string(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["name"] = arg1
+	var arg2 string
+	if tmp, ok := rawArgs["date"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("date"))
+		arg2, err = ec.unmarshalNString2string(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["date"] = arg2
+	return args, nil
+}
+
 func (ec *executionContext) field_Query_stock_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
 	var err error
 	args := map[string]interface{}{}
@@ -531,9 +578,9 @@ func (ec *executionContext) _DailyRecord_tradingVolume(ctx context.Context, fiel
 		}
 		return graphql.Null
 	}
-	res := resTmp.(float64)
+	res := resTmp.(string)
 	fc.Result = res
-	return ec.marshalNFloat2float64(ctx, field.Selections, res)
+	return ec.marshalNString2string(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_DailyRecord_tradingVolume(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -543,7 +590,7 @@ func (ec *executionContext) fieldContext_DailyRecord_tradingVolume(ctx context.C
 		IsMethod:   false,
 		IsResolver: false,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return nil, errors.New("field of type Float does not have child fields")
+			return nil, errors.New("field of type String does not have child fields")
 		},
 	}
 	return fc, nil
@@ -575,9 +622,9 @@ func (ec *executionContext) _DailyRecord_tradingPrice(ctx context.Context, field
 		}
 		return graphql.Null
 	}
-	res := resTmp.(float64)
+	res := resTmp.(string)
 	fc.Result = res
-	return ec.marshalNFloat2float64(ctx, field.Selections, res)
+	return ec.marshalNString2string(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_DailyRecord_tradingPrice(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -587,7 +634,7 @@ func (ec *executionContext) fieldContext_DailyRecord_tradingPrice(ctx context.Co
 		IsMethod:   false,
 		IsResolver: false,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return nil, errors.New("field of type Float does not have child fields")
+			return nil, errors.New("field of type String does not have child fields")
 		},
 	}
 	return fc, nil
@@ -619,9 +666,9 @@ func (ec *executionContext) _DailyRecord_openPrice(ctx context.Context, field gr
 		}
 		return graphql.Null
 	}
-	res := resTmp.(float64)
+	res := resTmp.(string)
 	fc.Result = res
-	return ec.marshalNFloat2float64(ctx, field.Selections, res)
+	return ec.marshalNString2string(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_DailyRecord_openPrice(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -631,7 +678,7 @@ func (ec *executionContext) fieldContext_DailyRecord_openPrice(ctx context.Conte
 		IsMethod:   false,
 		IsResolver: false,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return nil, errors.New("field of type Float does not have child fields")
+			return nil, errors.New("field of type String does not have child fields")
 		},
 	}
 	return fc, nil
@@ -663,9 +710,9 @@ func (ec *executionContext) _DailyRecord_highestPrice(ctx context.Context, field
 		}
 		return graphql.Null
 	}
-	res := resTmp.(float64)
+	res := resTmp.(string)
 	fc.Result = res
-	return ec.marshalNFloat2float64(ctx, field.Selections, res)
+	return ec.marshalNString2string(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_DailyRecord_highestPrice(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -675,7 +722,7 @@ func (ec *executionContext) fieldContext_DailyRecord_highestPrice(ctx context.Co
 		IsMethod:   false,
 		IsResolver: false,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return nil, errors.New("field of type Float does not have child fields")
+			return nil, errors.New("field of type String does not have child fields")
 		},
 	}
 	return fc, nil
@@ -707,9 +754,9 @@ func (ec *executionContext) _DailyRecord_lowestPrice(ctx context.Context, field 
 		}
 		return graphql.Null
 	}
-	res := resTmp.(float64)
+	res := resTmp.(string)
 	fc.Result = res
-	return ec.marshalNFloat2float64(ctx, field.Selections, res)
+	return ec.marshalNString2string(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_DailyRecord_lowestPrice(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -719,7 +766,7 @@ func (ec *executionContext) fieldContext_DailyRecord_lowestPrice(ctx context.Con
 		IsMethod:   false,
 		IsResolver: false,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return nil, errors.New("field of type Float does not have child fields")
+			return nil, errors.New("field of type String does not have child fields")
 		},
 	}
 	return fc, nil
@@ -751,9 +798,9 @@ func (ec *executionContext) _DailyRecord_closePrice(ctx context.Context, field g
 		}
 		return graphql.Null
 	}
-	res := resTmp.(float64)
+	res := resTmp.(string)
 	fc.Result = res
-	return ec.marshalNFloat2float64(ctx, field.Selections, res)
+	return ec.marshalNString2string(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_DailyRecord_closePrice(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -763,7 +810,7 @@ func (ec *executionContext) fieldContext_DailyRecord_closePrice(ctx context.Cont
 		IsMethod:   false,
 		IsResolver: false,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return nil, errors.New("field of type Float does not have child fields")
+			return nil, errors.New("field of type String does not have child fields")
 		},
 	}
 	return fc, nil
@@ -795,9 +842,9 @@ func (ec *executionContext) _DailyRecord_priceDiff(ctx context.Context, field gr
 		}
 		return graphql.Null
 	}
-	res := resTmp.(float64)
+	res := resTmp.(string)
 	fc.Result = res
-	return ec.marshalNFloat2float64(ctx, field.Selections, res)
+	return ec.marshalNString2string(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_DailyRecord_priceDiff(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -807,7 +854,7 @@ func (ec *executionContext) fieldContext_DailyRecord_priceDiff(ctx context.Conte
 		IsMethod:   false,
 		IsResolver: false,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return nil, errors.New("field of type Float does not have child fields")
+			return nil, errors.New("field of type String does not have child fields")
 		},
 	}
 	return fc, nil
@@ -839,9 +886,9 @@ func (ec *executionContext) _DailyRecord_transAmount(ctx context.Context, field 
 		}
 		return graphql.Null
 	}
-	res := resTmp.(float64)
+	res := resTmp.(string)
 	fc.Result = res
-	return ec.marshalNFloat2float64(ctx, field.Selections, res)
+	return ec.marshalNString2string(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_DailyRecord_transAmount(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -851,7 +898,7 @@ func (ec *executionContext) fieldContext_DailyRecord_transAmount(ctx context.Con
 		IsMethod:   false,
 		IsResolver: false,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return nil, errors.New("field of type Float does not have child fields")
+			return nil, errors.New("field of type String does not have child fields")
 		},
 	}
 	return fc, nil
@@ -1109,11 +1156,14 @@ func (ec *executionContext) _Query_stock(ctx context.Context, field graphql.Coll
 		ec.Error(ctx, err)
 	}
 	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
 		return graphql.Null
 	}
 	res := resTmp.([]*model.Stock)
 	fc.Result = res
-	return ec.marshalOStock2ᚕᚖgithubᚗcomᚋkwangsing3ᚋstockᚑbarᚋgraphᚋmodelᚐStockᚄ(ctx, field.Selections, res)
+	return ec.marshalNStock2ᚕᚖgithubᚗcomᚋkwangsing3ᚋstockᚑbarᚋgraphᚋmodelᚐStock(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Query_stock(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -1142,6 +1192,80 @@ func (ec *executionContext) fieldContext_Query_stock(ctx context.Context, field 
 	}()
 	ctx = graphql.WithFieldContext(ctx, fc)
 	if fc.Args, err = ec.field_Query_stock_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Query_record(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Query_record(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Query().Record(rctx, fc.Args["code"].(string), fc.Args["name"].(string), fc.Args["date"].(string))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.([]*model.DailyRecord)
+	fc.Result = res
+	return ec.marshalNDailyRecord2ᚕᚖgithubᚗcomᚋkwangsing3ᚋstockᚑbarᚋgraphᚋmodelᚐDailyRecord(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Query_record(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Query",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "date":
+				return ec.fieldContext_DailyRecord_date(ctx, field)
+			case "tradingVolume":
+				return ec.fieldContext_DailyRecord_tradingVolume(ctx, field)
+			case "tradingPrice":
+				return ec.fieldContext_DailyRecord_tradingPrice(ctx, field)
+			case "openPrice":
+				return ec.fieldContext_DailyRecord_openPrice(ctx, field)
+			case "highestPrice":
+				return ec.fieldContext_DailyRecord_highestPrice(ctx, field)
+			case "lowestPrice":
+				return ec.fieldContext_DailyRecord_lowestPrice(ctx, field)
+			case "closePrice":
+				return ec.fieldContext_DailyRecord_closePrice(ctx, field)
+			case "priceDiff":
+				return ec.fieldContext_DailyRecord_priceDiff(ctx, field)
+			case "transAmount":
+				return ec.fieldContext_DailyRecord_transAmount(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type DailyRecord", field.Name)
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Query_record_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
 		ec.Error(ctx, err)
 		return
 	}
@@ -3278,7 +3402,7 @@ func (ec *executionContext) unmarshalInputNewRecord(ctx context.Context, obj int
 			var err error
 
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("tradingVolume"))
-			it.TradingVolume, err = ec.unmarshalNFloat2float64(ctx, v)
+			it.TradingVolume, err = ec.unmarshalNString2string(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -3286,7 +3410,7 @@ func (ec *executionContext) unmarshalInputNewRecord(ctx context.Context, obj int
 			var err error
 
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("tradingPrice"))
-			it.TradingPrice, err = ec.unmarshalNFloat2float64(ctx, v)
+			it.TradingPrice, err = ec.unmarshalNString2string(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -3294,7 +3418,7 @@ func (ec *executionContext) unmarshalInputNewRecord(ctx context.Context, obj int
 			var err error
 
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("openPrice"))
-			it.OpenPrice, err = ec.unmarshalNFloat2float64(ctx, v)
+			it.OpenPrice, err = ec.unmarshalNString2string(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -3302,7 +3426,7 @@ func (ec *executionContext) unmarshalInputNewRecord(ctx context.Context, obj int
 			var err error
 
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("highestPrice"))
-			it.HighestPrice, err = ec.unmarshalNFloat2float64(ctx, v)
+			it.HighestPrice, err = ec.unmarshalNString2string(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -3310,7 +3434,7 @@ func (ec *executionContext) unmarshalInputNewRecord(ctx context.Context, obj int
 			var err error
 
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("lowestPrice"))
-			it.LowestPrice, err = ec.unmarshalNFloat2float64(ctx, v)
+			it.LowestPrice, err = ec.unmarshalNString2string(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -3318,7 +3442,7 @@ func (ec *executionContext) unmarshalInputNewRecord(ctx context.Context, obj int
 			var err error
 
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("closePrice"))
-			it.ClosePrice, err = ec.unmarshalNFloat2float64(ctx, v)
+			it.ClosePrice, err = ec.unmarshalNString2string(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -3326,7 +3450,7 @@ func (ec *executionContext) unmarshalInputNewRecord(ctx context.Context, obj int
 			var err error
 
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("priceDiff"))
-			it.PriceDiff, err = ec.unmarshalNFloat2float64(ctx, v)
+			it.PriceDiff, err = ec.unmarshalNString2string(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -3334,7 +3458,7 @@ func (ec *executionContext) unmarshalInputNewRecord(ctx context.Context, obj int
 			var err error
 
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("transAmount"))
-			it.TransAmount, err = ec.unmarshalNFloat2float64(ctx, v)
+			it.TransAmount, err = ec.unmarshalNString2string(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -3550,6 +3674,26 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 					}
 				}()
 				res = ec._Query_stock(ctx, field)
+				return res
+			}
+
+			rrm := func(ctx context.Context) graphql.Marshaler {
+				return ec.OperationContext.RootResolverMiddleware(ctx, innerFunc)
+			}
+
+			out.Concurrently(i, func() graphql.Marshaler {
+				return rrm(innerCtx)
+			})
+		case "record":
+			field := field
+
+			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Query_record(ctx, field)
 				return res
 			}
 
@@ -3998,21 +4142,6 @@ func (ec *executionContext) unmarshalNDeleteRecord2githubᚗcomᚋkwangsing3ᚋs
 	return res, graphql.ErrorOnPath(ctx, err)
 }
 
-func (ec *executionContext) unmarshalNFloat2float64(ctx context.Context, v interface{}) (float64, error) {
-	res, err := graphql.UnmarshalFloatContext(ctx, v)
-	return res, graphql.ErrorOnPath(ctx, err)
-}
-
-func (ec *executionContext) marshalNFloat2float64(ctx context.Context, sel ast.SelectionSet, v float64) graphql.Marshaler {
-	res := graphql.MarshalFloatContext(v)
-	if res == graphql.Null {
-		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
-			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
-		}
-	}
-	return graphql.WrapContextMarshaler(ctx, res)
-}
-
 func (ec *executionContext) unmarshalNNewRecord2githubᚗcomᚋkwangsing3ᚋstockᚑbarᚋgraphᚋmodelᚐNewRecord(ctx context.Context, v interface{}) (model.NewRecord, error) {
 	res, err := ec.unmarshalInputNewRecord(ctx, v)
 	return res, graphql.ErrorOnPath(ctx, err)
@@ -4023,14 +4152,42 @@ func (ec *executionContext) unmarshalNNewStock2githubᚗcomᚋkwangsing3ᚋstock
 	return res, graphql.ErrorOnPath(ctx, err)
 }
 
-func (ec *executionContext) marshalNStock2ᚖgithubᚗcomᚋkwangsing3ᚋstockᚑbarᚋgraphᚋmodelᚐStock(ctx context.Context, sel ast.SelectionSet, v *model.Stock) graphql.Marshaler {
-	if v == nil {
-		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
-			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
-		}
-		return graphql.Null
+func (ec *executionContext) marshalNStock2ᚕᚖgithubᚗcomᚋkwangsing3ᚋstockᚑbarᚋgraphᚋmodelᚐStock(ctx context.Context, sel ast.SelectionSet, v []*model.Stock) graphql.Marshaler {
+	ret := make(graphql.Array, len(v))
+	var wg sync.WaitGroup
+	isLen1 := len(v) == 1
+	if !isLen1 {
+		wg.Add(len(v))
 	}
-	return ec._Stock(ctx, sel, v)
+	for i := range v {
+		i := i
+		fc := &graphql.FieldContext{
+			Index:  &i,
+			Result: &v[i],
+		}
+		ctx := graphql.WithFieldContext(ctx, fc)
+		f := func(i int) {
+			defer func() {
+				if r := recover(); r != nil {
+					ec.Error(ctx, ec.Recover(ctx, r))
+					ret = nil
+				}
+			}()
+			if !isLen1 {
+				defer wg.Done()
+			}
+			ret[i] = ec.marshalOStock2ᚖgithubᚗcomᚋkwangsing3ᚋstockᚑbarᚋgraphᚋmodelᚐStock(ctx, sel, v[i])
+		}
+		if isLen1 {
+			f(i)
+		} else {
+			go f(i)
+		}
+
+	}
+	wg.Wait()
+
+	return ret
 }
 
 func (ec *executionContext) unmarshalNString2string(ctx context.Context, v interface{}) (string, error) {
@@ -4332,53 +4489,6 @@ func (ec *executionContext) marshalODailyRecord2ᚖgithubᚗcomᚋkwangsing3ᚋs
 		return graphql.Null
 	}
 	return ec._DailyRecord(ctx, sel, v)
-}
-
-func (ec *executionContext) marshalOStock2ᚕᚖgithubᚗcomᚋkwangsing3ᚋstockᚑbarᚋgraphᚋmodelᚐStockᚄ(ctx context.Context, sel ast.SelectionSet, v []*model.Stock) graphql.Marshaler {
-	if v == nil {
-		return graphql.Null
-	}
-	ret := make(graphql.Array, len(v))
-	var wg sync.WaitGroup
-	isLen1 := len(v) == 1
-	if !isLen1 {
-		wg.Add(len(v))
-	}
-	for i := range v {
-		i := i
-		fc := &graphql.FieldContext{
-			Index:  &i,
-			Result: &v[i],
-		}
-		ctx := graphql.WithFieldContext(ctx, fc)
-		f := func(i int) {
-			defer func() {
-				if r := recover(); r != nil {
-					ec.Error(ctx, ec.Recover(ctx, r))
-					ret = nil
-				}
-			}()
-			if !isLen1 {
-				defer wg.Done()
-			}
-			ret[i] = ec.marshalNStock2ᚖgithubᚗcomᚋkwangsing3ᚋstockᚑbarᚋgraphᚋmodelᚐStock(ctx, sel, v[i])
-		}
-		if isLen1 {
-			f(i)
-		} else {
-			go f(i)
-		}
-
-	}
-	wg.Wait()
-
-	for _, e := range ret {
-		if e == graphql.Null {
-			return graphql.Null
-		}
-	}
-
-	return ret
 }
 
 func (ec *executionContext) marshalOStock2ᚖgithubᚗcomᚋkwangsing3ᚋstockᚑbarᚋgraphᚋmodelᚐStock(ctx context.Context, sel ast.SelectionSet, v *model.Stock) graphql.Marshaler {

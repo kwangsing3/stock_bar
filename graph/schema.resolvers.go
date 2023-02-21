@@ -56,6 +56,12 @@ func (r *queryResolver) Stock(ctx context.Context, code string) ([]*model.Stock,
 	return res, err
 }
 
+// Record is the resolver for the record field.
+func (r *queryResolver) Record(ctx context.Context, code string, name string, date string) ([]*model.DailyRecord, error) {
+	res, err := dbhandler.DB.GetRecordByCode(code, name, date)
+	return res, err
+}
+
 // Mutation returns MutationResolver implementation.
 func (r *Resolver) Mutation() MutationResolver { return &mutationResolver{r} }
 
