@@ -2,6 +2,7 @@ package dbhandler
 
 import (
 	"context"
+	"time"
 
 	"github.com/kwangsing3/stock-bar/graph/model"
 
@@ -84,31 +85,61 @@ func (r *DBHandler) DeleteStock(code string) (*mongo.DeleteResult, error) {
 
 // Record
 func (r *DBHandler) InsertRecord(code string, record model.DailyRecord) (bool, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
 	filter := bson.M{"code": code}
+	var dd *model.Stock
+	err := r.coll.FindOne(ctx, filter).Decode(&dd)
+	if err != nil {
+		return false, err
+	}
+	exist := false
+	for i := 0; i < len(dd.HistoricalRecord); i++ {
+		if dd.HistoricalRecord[i].Date == record.Date {
+			exist = true
+		}
+		if exist {
+			break
+		}
+	}
+
+	if exist {
+		return r.UpdateRecord(code, record)
+	} else {
+		filter := bson.M{"code": code}
+		update := bson.M{
+			"$push": bson.M{
+				"historicalrecord": record,
+			},
+		}
+		_, err := r.coll.UpdateOne(context.TODO(), filter, update)
+		if err != nil {
+			return false, err
+		}
+		return true, nil
+	}
+}
+
+func (r *DBHandler) UpdateRecord(code string, record model.DailyRecord) (bool, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+	filter := bson.M{"code": code}
+	arrayFilters := options.ArrayFilters{Filters: bson.A{bson.M{"x.date": record.Date}}}
+	upsert := true
+	opts := options.UpdateOptions{
+		ArrayFilters: &arrayFilters,
+		Upsert:       &upsert,
+	}
 	update := bson.M{
-		"$push": bson.M{
-			"historicalrecord": record,
+		"$set": bson.M{
+			"historicalrecord.$[x]": record,
 		},
 	}
-	_, err := r.coll.UpdateOne(context.TODO(), filter, update)
+	_, err := r.coll.UpdateOne(ctx, filter, update, &opts)
 	if err != nil {
 		return false, err
 	}
 	return true, nil
-}
-
-func (r *DBHandler) UpdateRecord(code string, record model.NewRecord) error {
-	filter := bson.M{"code": code}
-	update := bson.M{
-		"$set": bson.M{
-			"historicalrecord": record,
-		},
-	}
-	_, err := r.coll.UpdateOne(context.TODO(), filter, update)
-	if err != nil {
-		return err
-	}
-	return nil
 }
 
 func (r *DBHandler) GetRecordByCode(code string, name string, date string) ([]*model.DailyRecord, error) {
