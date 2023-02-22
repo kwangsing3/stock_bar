@@ -2,6 +2,7 @@ package dbhandler
 
 import (
 	"context"
+	"time"
 
 	"github.com/kwangsing3/stock-bar/graph/model"
 
@@ -12,7 +13,7 @@ import (
 
 var DATABASE = "DEBUG"
 var COLLECTION = "STOCK"
-var DB, _ = NewDBHandler("/**MONGODB CONNECT URL**/")
+var DB, _ = NewDBHandler("mongodb+srv://genesis:xRncyo2dVDcvPiJQ@cluster0.jm9ahx2.mongodb.net/test")
 
 type DBHandler struct {
 	client *mongo.Client
@@ -84,13 +85,21 @@ func (r *DBHandler) DeleteStock(code string) (*mongo.DeleteResult, error) {
 
 // Record
 func (r *DBHandler) InsertRecord(code string, record model.DailyRecord) (bool, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
 	filter := bson.M{"code": code}
+	arrayFilters := options.ArrayFilters{Filters: bson.A{bson.M{"x.date": record.Date}}}
+	upsert := true
+	opts := options.UpdateOptions{
+		ArrayFilters: &arrayFilters,
+		Upsert:       &upsert,
+	}
 	update := bson.M{
-		"$push": bson.M{
-			"historicalrecord": record,
+		"$set": bson.M{
+			"historicalrecord.$[x]": record,
 		},
 	}
-	_, err := r.coll.UpdateOne(context.TODO(), filter, update)
+	_, err := r.coll.UpdateOne(ctx, filter, update, &opts)
 	if err != nil {
 		return false, err
 	}
