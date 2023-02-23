@@ -12,7 +12,8 @@ import (
 )
 
 var DATABASE = "DEBUG"
-var COLLECTION = "STOCK"
+var DATABASE_RECORD = "RECORD"
+var COLLECTION_STOCK = "STOCK"
 var DB, _ = NewDBHandler("/**MONGODB CONNECT URL**/")
 
 type DBHandler struct {
@@ -31,7 +32,7 @@ func NewDBHandler(srv string) (*DBHandler, error) {
 		return nil, err
 	}
 	db := client.Database(DATABASE)
-	coll := db.Collection(COLLECTION)
+	coll := db.Collection(COLLECTION_STOCK)
 	return &DBHandler{client: client, db: db, coll: coll}, nil
 }
 
@@ -41,31 +42,35 @@ func DisConnect() {
 
 // Stock
 func (r *DBHandler) UpsertStock(stock model.NewStock) (*model.Stock, error) {
-	res := model.Stock{
-		Name:             stock.Name,
-		Code:             stock.Code,
-		HistoricalRecord: []*model.DailyRecord{},
-	}
-	_, err := r.coll.UpdateOne(context.TODO(),
+	ctx, cancel := context.WithTimeout(context.TODO(), 5*time.Second)
+	defer cancel()
+	r.coll = r.db.Collection(COLLECTION_STOCK)
+	_, err := r.coll.UpdateOne(ctx,
 		bson.D{{Key: "code", Value: stock.Code}},
-		bson.D{{Key: "$set", Value: res}}, options.Update().SetUpsert(true))
+		bson.D{{Key: "$set", Value: stock}}, options.Update().SetUpsert(true))
 	if err != nil {
 		return nil, err
 	}
-	return &res, nil
+	return &model.Stock{
+		Code: stock.Code,
+		Name: stock.Name,
+	}, nil
 }
 func (r *DBHandler) GetStockByCode(code string) ([]*model.Stock, error) {
+	ctx, cancel := context.WithTimeout(context.TODO(), 5*time.Second)
+	defer cancel()
+	r.coll = r.db.Collection(COLLECTION_STOCK)
 	var res []*model.Stock
 	//如果是空就返回全部項目
 	var filter interface{} = bson.M{"code": code}
 	if code == "" {
 		filter = bson.D{{}}
 	}
-	cur, err := r.coll.Find(context.TODO(), filter)
+	cur, err := r.coll.Find(ctx, filter)
 	if err != nil {
 		return nil, err
 	}
-	for cur.Next(context.TODO()) {
+	for cur.Next(ctx) {
 		var elem *model.Stock
 		err := cur.Decode(&elem)
 		if err != nil {
@@ -76,7 +81,10 @@ func (r *DBHandler) GetStockByCode(code string) ([]*model.Stock, error) {
 	return res, nil
 }
 func (r *DBHandler) DeleteStock(code string) (*mongo.DeleteResult, error) {
-	res, err := r.coll.DeleteMany(context.TODO(), bson.M{"code": code})
+	ctx, cancel := context.WithTimeout(context.TODO(), 5*time.Second)
+	defer cancel()
+	r.coll = r.db.Collection(COLLECTION_STOCK)
+	res, err := r.coll.DeleteMany(ctx, bson.M{"code": code})
 	if err != nil {
 		return res, err
 	}
@@ -85,57 +93,14 @@ func (r *DBHandler) DeleteStock(code string) (*mongo.DeleteResult, error) {
 
 // Record
 func (r *DBHandler) InsertRecord(code string, record model.DailyRecord) (bool, error) {
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	ctx, cancel := context.WithTimeout(context.TODO(), 5*time.Second)
 	defer cancel()
-	filter := bson.M{"code": code}
-	var dd *model.Stock
-	err := r.coll.FindOne(ctx, filter).Decode(&dd)
-	if err != nil {
-		return false, err
-	}
-	exist := false
-	for i := 0; i < len(dd.HistoricalRecord); i++ {
-		if dd.HistoricalRecord[i].Date == record.Date {
-			exist = true
-		}
-		if exist {
-			break
-		}
-	}
 
-	if exist {
-		return r.UpdateRecord(code, record)
-	} else {
-		filter := bson.M{"code": code}
-		update := bson.M{
-			"$push": bson.M{
-				"historicalrecord": record,
-			},
-		}
-		_, err := r.coll.UpdateOne(context.TODO(), filter, update)
-		if err != nil {
-			return false, err
-		}
-		return true, nil
-	}
-}
-
-func (r *DBHandler) UpdateRecord(code string, record model.DailyRecord) (bool, error) {
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
-	defer cancel()
-	filter := bson.M{"code": code}
-	arrayFilters := options.ArrayFilters{Filters: bson.A{bson.M{"x.date": record.Date}}}
-	upsert := true
-	opts := options.UpdateOptions{
-		ArrayFilters: &arrayFilters,
-		Upsert:       &upsert,
-	}
-	update := bson.M{
-		"$set": bson.M{
-			"historicalrecord.$[x]": record,
-		},
-	}
-	_, err := r.coll.UpdateOne(ctx, filter, update, &opts)
+	r.db = r.client.Database(DATABASE_RECORD)
+	r.coll = r.db.Collection(code)
+	_, err := r.coll.UpdateOne(ctx,
+		bson.D{{Key: "date", Value: record.Date}},
+		bson.D{{Key: "$set", Value: record}}, options.Update().SetUpsert(true))
 	if err != nil {
 		return false, err
 	}
@@ -143,16 +108,23 @@ func (r *DBHandler) UpdateRecord(code string, record model.DailyRecord) (bool, e
 }
 
 func (r *DBHandler) GetRecordByCode(code string, name string, date string) ([]*model.DailyRecord, error) {
+	ctx, cancel := context.WithTimeout(context.TODO(), 5*time.Second)
+	defer cancel()
+	r.db = r.client.Database(DATABASE_RECORD)
+	r.coll = r.db.Collection(code)
 	var res []*model.DailyRecord
-	filter := bson.M{"code": code}
-	var dd *model.Stock
-	err := r.coll.FindOne(context.TODO(), filter).Decode(&dd)
-
-	lens := len(dd.HistoricalRecord)
-	for i := 0; i < lens; i++ {
-		if dd.HistoricalRecord[i].Date == date {
-			res = append(res, dd.HistoricalRecord[i])
+	var filter interface{} = bson.M{"date": date}
+	if date == "" {
+		filter = bson.D{{}}
+	}
+	cur, err := r.coll.Find(ctx, filter)
+	for cur.Next(ctx) {
+		var elem *model.DailyRecord
+		err := cur.Decode(&elem)
+		if err != nil {
+			continue
 		}
+		res = append(res, elem)
 	}
 	if err != nil {
 		return nil, err

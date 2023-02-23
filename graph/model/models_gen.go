@@ -39,7 +39,6 @@ type NewStock struct {
 }
 
 type Stock struct {
-	Code             string         `json:"code"`
-	Name             string         `json:"name"`
-	HistoricalRecord []*DailyRecord `json:"historicalRecord"`
+	Code string `json:"code"`
+	Name string `json:"name"`
 }

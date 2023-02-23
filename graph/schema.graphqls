@@ -43,7 +43,6 @@ input DeleteRecord {
 type Stock {
   code: String!
   name: String!
-  historicalRecord: [DailyRecord]!
 }
 type DailyRecord {
   date: String! #日期
