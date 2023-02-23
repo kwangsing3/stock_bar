@@ -69,9 +69,8 @@ type ComplexityRoot struct {
 	}
 
 	Stock struct {
-		Code             func(childComplexity int) int
-		HistoricalRecord func(childComplexity int) int
-		Name             func(childComplexity int) int
+		Code func(childComplexity int) int
+		Name func(childComplexity int) int
 	}
 }
 
@@ -242,13 +241,6 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Stock.Code(childComplexity), true
-
-	case "Stock.historicalRecord":
-		if e.complexity.Stock.HistoricalRecord == nil {
-			break
-		}
-
-		return e.complexity.Stock.HistoricalRecord(childComplexity), true
 
 	case "Stock.name":
 		if e.complexity.Stock.Name == nil {
@@ -943,8 +935,6 @@ func (ec *executionContext) fieldContext_Mutation_createStock(ctx context.Contex
 				return ec.fieldContext_Stock_code(ctx, field)
 			case "name":
 				return ec.fieldContext_Stock_name(ctx, field)
-			case "historicalRecord":
-				return ec.fieldContext_Stock_historicalRecord(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Stock", field.Name)
 		},
@@ -1178,8 +1168,6 @@ func (ec *executionContext) fieldContext_Query_stock(ctx context.Context, field 
 				return ec.fieldContext_Stock_code(ctx, field)
 			case "name":
 				return ec.fieldContext_Stock_name(ctx, field)
-			case "historicalRecord":
-				return ec.fieldContext_Stock_historicalRecord(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Stock", field.Name)
 		},
@@ -1482,70 +1470,6 @@ func (ec *executionContext) fieldContext_Stock_name(ctx context.Context, field g
 		IsResolver: false,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 			return nil, errors.New("field of type String does not have child fields")
-		},
-	}
-	return fc, nil
-}
-
-func (ec *executionContext) _Stock_historicalRecord(ctx context.Context, field graphql.CollectedField, obj *model.Stock) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_Stock_historicalRecord(ctx, field)
-	if err != nil {
-		return graphql.Null
-	}
-	ctx = graphql.WithFieldContext(ctx, fc)
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return obj.HistoricalRecord, nil
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		if !graphql.HasFieldError(ctx, fc) {
-			ec.Errorf(ctx, "must not be null")
-		}
-		return graphql.Null
-	}
-	res := resTmp.([]*model.DailyRecord)
-	fc.Result = res
-	return ec.marshalNDailyRecord2ᚕᚖgithubᚗcomᚋkwangsing3ᚋstockᚑbarᚋgraphᚋmodelᚐDailyRecord(ctx, field.Selections, res)
-}
-
-func (ec *executionContext) fieldContext_Stock_historicalRecord(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
-	fc = &graphql.FieldContext{
-		Object:     "Stock",
-		Field:      field,
-		IsMethod:   false,
-		IsResolver: false,
-		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			switch field.Name {
-			case "date":
-				return ec.fieldContext_DailyRecord_date(ctx, field)
-			case "tradingVolume":
-				return ec.fieldContext_DailyRecord_tradingVolume(ctx, field)
-			case "tradingPrice":
-				return ec.fieldContext_DailyRecord_tradingPrice(ctx, field)
-			case "openPrice":
-				return ec.fieldContext_DailyRecord_openPrice(ctx, field)
-			case "highestPrice":
-				return ec.fieldContext_DailyRecord_highestPrice(ctx, field)
-			case "lowestPrice":
-				return ec.fieldContext_DailyRecord_lowestPrice(ctx, field)
-			case "closePrice":
-				return ec.fieldContext_DailyRecord_closePrice(ctx, field)
-			case "priceDiff":
-				return ec.fieldContext_DailyRecord_priceDiff(ctx, field)
-			case "transAmount":
-				return ec.fieldContext_DailyRecord_transAmount(ctx, field)
-			}
-			return nil, fmt.Errorf("no field named %q was found under type DailyRecord", field.Name)
 		},
 	}
 	return fc, nil
@@ -3744,13 +3668,6 @@ func (ec *executionContext) _Stock(ctx context.Context, sel ast.SelectionSet, ob
 		case "name":
 
 			out.Values[i] = ec._Stock_name(ctx, field, obj)
-
-			if out.Values[i] == graphql.Null {
-				invalids++
-			}
-		case "historicalRecord":
-
-			out.Values[i] = ec._Stock_historicalRecord(ctx, field, obj)
 
 			if out.Values[i] == graphql.Null {
 				invalids++
